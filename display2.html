@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table with Add Form</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        th, td { text-align: center; }
+        #addForm { margin-bottom: 20px; }
+
+        body {
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold; /* Make the h1 bolder */
+        }
+
+        #addForm {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        table td {
+            background-color: #ffffff;
+        }
+
+        table tbody tr:nth-child(odd) td {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    
+
+<div class="container mt-5">
+    <!-- Form at the top -->
+    <h1>        विधानसभा निवडणूक 2024
+    </h1>
+    <form id="addForm" class="form-inline">
+        <div class="form-group mx-sm-3 mb-2">
+          
+            <label for="bnoSelect" class="sr-only">BNO</label>
+            <select class="form-control" id="bnoSelect" onchange="populateFields()">
+                <option value="" disabled selected>Select BNO</option>
+            </select>
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="rankInput" class="sr-only">Rank</label>
+            <input type="text" class="form-control" id="rankInput" placeholder="Rank" readonly>
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="nameInput" class="sr-only">Name</label>
+            <input type="text" class="form-control" id="nameInput" placeholder="Name" readonly>
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="postInput" class="sr-only">Post</label>
+            <input type="text" class="form-control" id="postInput" placeholder="Post" readonly>
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="mobileInput" class="sr-only">Mobile</label>
+            <input type="text" class="form-control" id="mobileInput" placeholder="Mobile" readonly>
+        </div>
+        <button type="button" class="btn btn-primary mb-2" onclick="addDataToRow()">Add</button>
+    </form>
+
+    <!-- Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>अ.क्र</th>
+                <th>मतदान केंद्र</th>
+                <th>मतदान केंद्र नाव</th>
+                <th>ईमारत नाव</th>
+                <th>BNO</th>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Post</th>
+                <th>Mobile</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let firstExcelData, secondExcelData;
+
+    // Load data from localStorage
+    window.onload = function() {
+        firstExcelData = JSON.parse(localStorage.getItem('firstExcelData'));
+        secondExcelData = JSON.parse(localStorage.getItem('secondExcelData'));
+
+        // Populate the first four columns from the first Excel
+        let tableBody = document.getElementById('tableBody');
+        firstExcelData.slice(1).forEach((row) => {
+            let newRow = `<tr>
+                            <td>${row[0]}</td>
+                            <td>${row[1]}</td>
+                            <td>${row[2]}</td>
+                            <td>${row[3]}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>`;
+            tableBody.innerHTML += newRow;
+        });
+
+        // Populate BNO dropdown from second Excel
+        let bnoSelect = document.getElementById('bnoSelect');
+        secondExcelData.slice(1).forEach(row => {
+            let option = document.createElement('option');
+            option.value = row[0];
+            option.textContent = row[0];
+            bnoSelect.appendChild(option);
+        });
+    };
+
+    // Populate fields when BNO is selected
+    function populateFields() {
+        let selectedBno = document.getElementById('bnoSelect').value;
+        let dataRow = secondExcelData.find(row => row[0] == selectedBno);
+        
+        if (dataRow) {
+            document.getElementById('rankInput').value = dataRow[1]; // Rank in 2nd column of Excel
+            document.getElementById('nameInput').value = dataRow[2]; // Name in 3rd column of Excel
+            document.getElementById('postInput').value = dataRow[3]; // Post in 4th column of Excel
+            document.getElementById('mobileInput').value = dataRow[4]; // Mobile in 5th column of Excel
+        }
+    }
+
+    // Function to add data to the table row
+    function addDataToRow() {
+        let tableBody = document.getElementById('tableBody');
+        let currentRow = tableBody.querySelectorAll('tr')[0];
+
+        if (!currentRow) {
+            alert('No row found to add data.');
+            return;
+        }
+
+        let bno = document.getElementById('bnoSelect').value;
+        let rank = document.getElementById('rankInput').value;
+        let name = document.getElementById('nameInput').value;
+        let post = document.getElementById('postInput').value;
+        let mobile = document.getElementById('mobileInput').value;
+
+        if (bno && rank && name && post && mobile) {
+            currentRow.children[4].innerText = bno;
+            currentRow.children[5].innerText = rank;
+            currentRow.children[6].innerText = name;
+            currentRow.children[7].innerText = post;
+            currentRow.children[8].innerText = mobile;
+
+            currentRow.classList.add("completed-row");  // mark row as completed
+            tableBody.appendChild(currentRow.cloneNode(true));  // Clone row and append for future
+        }
+    }
+</script>
+</body>
+</html>
